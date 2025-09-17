@@ -1,0 +1,22 @@
+export class Asteroid {
+    constructor({position, velocity, radius, context}) {
+        this.position = position;
+        this.velocity = velocity;
+        this.radius = radius;
+        this.context = context;
+    }
+    draw() {
+        this.context.beginPath();
+        this.context.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2, false);
+        this.context.closePath();
+
+        this.context.strokeStyle = 'white';
+        this.context.stroke();
+    }
+
+    update() {
+        this.draw();
+        this.position.x += this.velocity.x;
+        this.position.y += this.velocity.y;
+    }
+}
