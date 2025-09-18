@@ -90,7 +90,8 @@ function newPlayer() {
                 y: window.innerHeight / 2
             },
             velocity: {x: 0, y: 0},
-            context: context
+            context: context,
+            canvas: canvas,
         }
     );
 }

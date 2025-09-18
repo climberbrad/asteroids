@@ -1,9 +1,10 @@
 export class Player {
-    constructor({position, velocity, context}) {
+    constructor({position, velocity, context, canvas}) {
         this.position = position;
         this.velocity = velocity;
         this.context = context;
         this.rotation = 0;
+        this.canvas = canvas;
     }
 
     draw() {
@@ -26,6 +27,23 @@ export class Player {
         this.draw();
         this.position.x += this.velocity.x;
         this.position.y += this.velocity.y;
+
+        if(this.position.x < 0) {
+            this.position.x = this.canvas.width;
+        }
+
+        if(this.position.x > this.canvas.width) {
+            this.position.x = 0;
+        }
+
+        if(this.position.y < 0) {
+            this.position.y = this.canvas.height;
+        }
+
+        if(this.position.y > this.canvas.height) {
+            this.position.y = 0;
+        }
+
     }
 
     getVertices() {
