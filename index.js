@@ -1,7 +1,7 @@
 import {circleCollision, circleTriangleCollision} from "./utils.js";
 import {Player} from "./player.js";
 import {ScoreBoard} from "./scoreboard.js";
-import {Asteroid} from "./asteroid.js"
+import {Asteroid, ASTEROID_SIZE} from "./asteroid.js"
 import {Projectile} from "./projectile.js";
 
 // https://www.youtube.com/watch?v=pF-cI9PEawk
@@ -28,6 +28,21 @@ const GAME_STATE = {
 let state = GAME_STATE.RUNNING;
 let player;
 let scoreBoard;
+
+function createAsteroid(x, y, vx, vy, radius) {
+    return new Asteroid({
+        position: {
+            x: x,
+            y: y
+        },
+        velocity: {
+            x: vx,
+            y: vy,
+        },
+        radius: radius,
+        context: context
+    })
+}
 
 const intervalId = window.setInterval(() => {
     if(state === GAME_STATE.END) return;
@@ -64,18 +79,7 @@ const intervalId = window.setInterval(() => {
             break;
     }
 
-    asteroids.push(new Asteroid({
-        position: {
-            x: x,
-            y: y
-        },
-        velocity: {
-            x: vx,
-            y: vy,
-        },
-        radius: radius,
-        context: context
-    }));
+    asteroids.push(createAsteroid(x,y,vx,vy,radius));
 
 }, 500)
 
@@ -156,6 +160,12 @@ const keys = {
     a: { isPressed: false },
 }
 
+function getPoints(asteroid) {
+    if(asteroid.size === ASTEROID_SIZE.SMALL) return 50;
+    if(asteroid.size === ASTEROID_SIZE.MEDIUM) return 20;
+    if(asteroid.size === ASTEROID_SIZE.LARGE) return 10;
+}
+
 function animate() {
     const windowId = window.requestAnimationFrame(animate);
 
@@ -189,7 +199,7 @@ function animate() {
         const projectile = projectiles[i];
         projectile.update();
 
-        // remove off-screen projectiles
+        // projectile garbage collection
         if(
             projectile.position.x + projectile.radius < 0 ||
             projectile.position.x - projectile.radius > canvas.width ||
@@ -210,7 +220,7 @@ function animate() {
             state = 0;
         }
 
-        // // remove off-screen asteroids
+        // asteroid garbage collection
         if(
             asteroid.position.x + asteroid.radius < 0 ||
             asteroid.position.x - asteroid.radius > canvas.width ||
@@ -220,13 +230,24 @@ function animate() {
             asteroids.splice(i, 1);
         }
 
-        // shot asteroid
+        // asteroid shot
         for(let j= projectiles.length-1; j >= 0 ; j--) {
             const projectile = projectiles[j];
             if(circleCollision(asteroid, projectile)) {
                 projectiles.splice(j, 1);
                 asteroids.splice(i, 1);
-                scoreBoard.score += 10;
+                scoreBoard.score += getPoints(asteroid);
+
+                if(asteroid.size !== ASTEROID_SIZE.SMALL) {
+                    asteroids.push(
+                        createAsteroid(
+                            asteroid.position.x + 2,
+                            asteroid.position.y  + 12,
+                            asteroid.velocity.x * Math.random() + 1,
+                            asteroid.velocity.y * Math.random() + 1,
+                            asteroid.radius - 15)
+                    );
+                }
             }
         }
     }
