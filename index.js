@@ -28,6 +28,7 @@ const GAME_STATE = {
 let state = GAME_STATE.RUNNING;
 let player;
 let scoreBoard;
+let highScore = 0;
 
 function createAsteroid(x, y, vx, vy, radius) {
     return new Asteroid({
@@ -44,7 +45,7 @@ function createAsteroid(x, y, vx, vy, radius) {
     })
 }
 
-const intervalId = window.setInterval(() => {
+function asteroidTimer() {
     if(state === GAME_STATE.END) return;
 
     const spawnLocation = Math.floor(Math.random() * 4);
@@ -81,7 +82,29 @@ const intervalId = window.setInterval(() => {
 
     asteroids.push(createAsteroid(x,y,vx,vy,radius));
 
-}, 500)
+}
+
+let intervalTime = 2000;
+function recursiveTimer() {
+    asteroidTimer();
+
+    setTimeout(recursiveTimer, intervalTime);
+}
+
+function updateInterval(newTime) {
+    if (newTime > 0) {
+        intervalTime = newTime;
+        console.log(`Updated interval time to ${intervalTime}ms.`);
+    }
+}
+
+recursiveTimer();
+// After 5 seconds, update the interval time to 500ms
+setInterval(() => {
+    if(intervalTime > 300) {
+        updateInterval(intervalTime - 100);
+    }
+}, 5000);
 
 function newPlayer() {
     return new Player({
@@ -99,6 +122,7 @@ function newPlayer() {
 function restartGame() {
     asteroids.length = 0;
     projectiles.length = 0;
+    intervalTime = 2000;
 
 
     player = newPlayer();
@@ -171,6 +195,10 @@ function animate() {
     const windowId = window.requestAnimationFrame(animate);
 
     if(state === GAME_STATE.END) {
+        if(scoreBoard.score > highScore) {
+            highScore = scoreBoard.score;
+        }
+
         context.fillStyle = "rgba(0, 0, 0, 0.7)"; // Semi-transparent black overlay
         context.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -183,8 +211,11 @@ function animate() {
         context.fillText(`Score: ${scoreBoard.score}`, canvas.width / 2, canvas.height / 2 + 20);
         window.cancelAnimationFrame(windowId);
 
+        context.font = "14px Arial";
+        context.fillText(`High Score: ${highScore}` , canvas.width / 2, canvas.height / 2 + 75);
+
         context.font = "20px Arial";
-        context.fillText("Press 'R' to Restart", canvas.width / 2, canvas.height / 2 + 75);
+        context.fillText("Press 'R' to Restart", canvas.width / 2, canvas.height / 2 + 150);
 
         // window.clearInterval(intervalId);
         return;
